@@ -178,15 +178,27 @@ async function loadProductsFromCloud() {
         if (!response.ok) throw new Error('خطأ في جلب البيانات من السيرفر');
         const products = await response.json();
         
-        // إسناد المنتجات القادمة من السحاب لحالة التطبيق (state)
-        state.products = products;
-        console.log("تم تحميل المنتجات بنجاح من قاعدة البيانات السحابية:", state.products);
+        // دالة إرسال وحفظ منتج جديد في قاعدة البيانات السحابية
+async function saveProductToCloud(productData) {
+    try {
+        const response = await fetch('/api/products', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(productData)
+        });
+
+        const result = await response.json();
+        if (result.success) {
+            alert("🎉 تم حفظ المنتج سحابياً بنجاح وسيظهر لكل الزوار الآن!");
+            await loadProductsFromCloud(); // تحديث القائمة فوراً
+            if (typeof renderStorefront === 'function') renderStorefront(); 
+        } else {
+            alert("حدث خطأ أثناء الحفظ: " + result.error);
+        }
     } catch (error) {
-        console.error("فشل تحميل المنتجات السحابية، سيتم استخدام مصفوفة فارغة:", error);
-        state.products = [];
+        console.error("خطأ في الاتصال بالسيرفر السحابي:", error);
     }
 }
-
 // دالة منفصلة لتحميل السلة محلياً في جهاز الزبون (تبقي السلة محفوظة للزبون نفسه فقط)
 function loadCartFromLocalStorage() {
     try {
@@ -1117,14 +1129,10 @@ function handleProductFormSubmit(e) {
             image: imageSrc
         };
 
-        state.products.push(newProduct);
-        showToast("تمت إضافة المنتج بنجاح!");
-    }
-
-    saveDataToLocalStorage();
-    resetProductForm();
-    renderAdminPanel();
-    renderStorefront();
+// رفع وحفظ المنتج في قاعدة البيانات السحابية مباشرة
+        await saveProductToCloud(newProduct);
+        resetProductForm();
+        if (typeof renderAdminPanel === 'function') renderAdminPanel();
 }
 
 function editProduct(productId) {
