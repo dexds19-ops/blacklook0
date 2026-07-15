@@ -1077,7 +1077,7 @@ function handleTrackingSearchSubmit(e) {
 }
 
 // --- Admin Product Forms CRUD ---
-async function handleProductFormSubmit(e) {
+    async function handleProductFormSubmit(e) {
     e.preventDefault();
 
     const editId = DOM.editProductId.value;
