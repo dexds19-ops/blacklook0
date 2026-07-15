@@ -1058,7 +1058,7 @@ function displayOrderTrackingResult(order) {
 }
 
 function handleTrackingSearchSubmit(e) {
-    e.preventDefault();
+    e.preventDefault();async
     let query = DOM.trackInput.value.trim().toUpperCase();
 
     if (query && !query.startsWith("BL-")) {
@@ -1130,7 +1130,7 @@ function handleTrackingSearchSubmit(e) {
         };
 
 // رفع وحفظ المنتج في قاعدة البيانات السحابية مباشرة
-        await saveProductToCloud(newProduct);
+        // await saveProductToCloud(newProduct);
         resetProductForm();
         if (typeof renderAdminPanel === 'function') renderAdminPanel();
 }
