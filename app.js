@@ -156,22 +156,47 @@ const DOM = {
     toastContainer: document.getElementById("toast-container")
 };
 
-// --- Initialization ---
-document.addEventListener("DOMContentLoaded", () => {
-    loadDataFromLocalStorage();
+// // --- Initialization ---
+document.addEventListener("DOMContentLoaded", async () => {
+    // 1. جلب المنتجات سحابياً أولاً
+    await loadProductsFromCloud();
+    
+    // 2. تحميل السلة محلياً كالمعتاد
+    loadCartFromLocalStorage();
+    
     setupEventListeners();
     renderStorefront();
     updateCartUI();
 });
 
-// --- LocalStorage Operations ---
-function loadDataFromLocalStorage() {
-    try {
-        const storedProducts = localStorage.getItem(LOCAL_STORAGE_PRODUCTS);
-        state.products = storedProducts ? JSON.parse(storedProducts) : [];
+// // --- Cloud & LocalStorage Operations ---
 
+// جلب المنتجات من السيرفر السحابي
+async function loadProductsFromCloud() {
+    try {
+        const response = await fetch('/api/products');
+        if (!response.ok) throw new Error('خطأ في جلب البيانات من السيرفر');
+        const products = await response.json();
+        
+        // إسناد المنتجات القادمة من السحاب لحالة التطبيق (state)
+        state.products = products;
+        console.log("تم تحميل المنتجات بنجاح من قاعدة البيانات السحابية:", state.products);
+    } catch (error) {
+        console.error("فشل تحميل المنتجات السحابية، سيتم استخدام مصفوفة فارغة:", error);
+        state.products = [];
+    }
+}
+
+// دالة منفصلة لتحميل السلة محلياً في جهاز الزبون (تبقي السلة محفوظة للزبون نفسه فقط)
+function loadCartFromLocalStorage() {
+    try {
         const storedCart = localStorage.getItem(LOCAL_STORAGE_CART);
         state.cart = storedCart ? JSON.parse(storedCart) : [];
+    } catch (error) {
+        console.error("Error loading cart:", error);
+        state.cart = [];
+    }
+}
 
         const storedOrders = localStorage.getItem(LOCAL_STORAGE_ORDERS);
         state.orders = storedOrders ? JSON.parse(storedOrders) : [];
